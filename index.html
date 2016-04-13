@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+</head>
+<body>
+<script>
+
+	/* holds the automata cell object details */
+	/*        essentially the primary ADT         */
+	var cell = function(){
+		this.row = null;
+		this.index = null;
+		this.state = false;
+		this.element = null;
+	}
+	
+	var rule = function( c , r ){
+		this.checks = c;
+		this.result = r;
+	}
+	
+	var cellular = function( n ){
+	
+		var offset = 0;
+		var row = 0;
+		this.cells = {};
+		this._row_length = 77;
+		this._rule_set = {};
+		
+		
+		/* supply with a default ruleset for us to examine */ 
+		/*                   using default rule set 30                   */ 
+		
+		this._rule_set[ 0 ] = new rule( [ true, true, true], false );
+		this._rule_set[ 1 ] = new rule( [ true, true, false], false );
+		this._rule_set[ 2 ] = new rule( [ true, false, true], false );
+		this._rule_set[ 3 ] = new rule( [ true, false, false], true );
+		this._rule_set[ 4 ] = new rule( [ false, true, true], true );
+		this._rule_set[ 5 ] = new rule( [ false, true, false], true );
+		this._rule_set[ 6 ] = new rule( [ false, false, true], true );
+		this._rule_set[ 7 ] = new rule( [ false, false, false], false );
+		
+
+		for ( var i = 0, i2 = 0; i < n; i++, i2++ ){
+		
+			var c = new cell();
+			var div = document.createElement("div");
+			
+			if ( i == 38 && row == 1 ){
+				div.className = i + " black";
+				c.state = true;
+			}else{
+				div.className = i;
+			}
+			
+			/* run the main routine */ 
+			if ( row > 1 && this.ruleCheck( i ) ){
+				div.className = i + " black";
+				c.state = true;
+			}
+				
+			$('.board2').append(div);
+			
+			if ( div.offsetTop != offset ){
+				offset = div.offsetTop;
+				row += 1;
+			}
+			
+			if ( i2 == 76 ){
+				i2 = 0;
+			}
+			
+			c.row = row;
+			c.index = i2;
+			c.element = div;		
+			
+			this.cells[ i ] = c;
+		}
+	
+
+	}
+	
+	/* select the rules for manipulation */ 
+	/* return an array of the selected spaces */
+	cellular.prototype.select = function ( n ){
+		var returnArr = [];
+		
+		returnArr.push( n - this._row_length - 1 );
+		returnArr.push( n - this._row_length );
+		returnArr.push( n - this._row_length +1 );
+		
+		return returnArr;
+	}
+	
+	/* utility function abstracted for general purpose */ 
+	cellular.prototype.getCell = function ( n ){
+		return this.cells[ n ];
+	}
+	
+	/* If a ruleset should apply, return true */ 
+	cellular.prototype.ruleCheck = function( n ){
+		var sCells = this.select( n );
+		console.log( JSON.stringify( sCells ) );
+		for ( var i = 0; i <= 6; i++){
+			
+			var match = true;
+			for( var i2 = 0; i2 <= 2; i2++){
+				if ( this.getCell( sCells[ i2 ] ).state == this._rule_set[ i ].checks[ i2 ] ){
+					continue;
+				}else{
+					match = false;
+					break;
+				}
+			}
+			
+			if ( match == true ){
+				console.log( JSON.stringify( this._rule_set[ i ] ) );
+				return this._rule_set[ i ].result;
+			}
+		}
+		
+		return false;
+	
+	}
+	
+	
+	
+	
+	
+
+$( document ).ready(function() {
+
+	autonoma = new cellular( 2 * 2002 );
+
+	$(".board2 div").hover(	
+	  function() {
+			var n = $( this ).attr("class");
+			autonoma.select ( n );
+	  }, function() {
+	
+	  }
+	);
+});
+
+
+	
+</script>
+
+<div class="board2"></div>
+
+</body>
+
+<style>
+
+	.board2 div{
+	    width: 5.5px;
+		height: 5.5px;
+		display: table-cell;
+		background-color: gray;
+		margin: 0.5px;
+		float: left;
+		display: inline-block;
+		font-size: 3px;
+	}
+	
+	.board2 div.black{
+		background-color:black;
+	}
+	
+	.board2 div:hover{
+		background-color:green;
+		cursor:pointer;
+	}
+	
+	.board2{
+	    display: table;
+		width: 505px;
+		display: table;
+		background-color: whitesmoke;
+		margin: 0px auto;
+	}
+
+</style>
+</html>
+
+
+
+
